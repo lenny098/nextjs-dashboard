@@ -1,3 +1,5 @@
+'use client';
+
 import { CustomerField } from '@/app/lib/definitions';
 import Link from 'next/link';
 import {
@@ -8,12 +10,18 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import clsx from 'clsx';
-import { createInvoice } from '@/app/lib/actions';
+import { createInvoice, State } from '@/app/lib/actions';
+import { useActionState } from 'react';
 
 export default function Form({ customers }: { customers: CustomerField[] }) {
+  const [state, formAction] = useActionState<State, FormData>(
+    createInvoice,
+    { message: null, errors: {} }
+  );
+
   const CustomerName = () => (
-    <div className="mb-4">
-      <label htmlFor="customer" className="mb-2 block text-sm font-medium">
+    <div className="grid gap-2">
+      <label htmlFor="customer" className="block text-sm font-medium">
         Choose customer
       </label>
       <div className="relative">
@@ -26,15 +34,14 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
             'cursor-pointer peer'
           )}
           defaultValue=""
+          aria-describedby="customer-error"
         >
-          <option value="" disabled>
-            Select a customer
-          </option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-            </option>
-          ))}
+          <option value="" disabled>Select a customer</option>
+          {
+            customers.map(({ id, name }) => (
+              <option key={id} value={id}>{name}</option>
+            ))
+          }
         </select>
         <UserCircleIcon
           className={clsx(
@@ -43,15 +50,24 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
           )}
         />
       </div>
+      <div id="customer-error" aria-live="polite" aria-atomic="true">
+        {
+          state.errors?.customerId?.map(
+            (error: string) => (
+              <p key={error} className="text-sm text-red-500">{error}</p>
+            )
+          )
+        }
+      </div>
     </div>
   );
 
   const Amount = () => (
-    <div className="mb-4">
-      <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+    <div className="grid gap-2">
+      <label htmlFor="amount" className="block text-sm font-medium">
         Choose an amount
       </label>
-      <div className="relative mt-2 rounded-md">
+      <div className="relative rounded-md">
         <div className="relative">
           <input
             id="amount"
@@ -64,6 +80,7 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
               'border border-gray-200 rounded-md py-2 pl-10 outline-2',
               'peer'
             )}
+            aria-describedby="amount-error"
           />
           <CurrencyDollarIcon
             className={clsx(
@@ -74,62 +91,87 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
           />
         </div>
       </div>
+      <div id="amount-error" aria-live="polite" aria-atomic="true">
+        {
+          state.errors?.amount?.map(
+            (error: string) => (
+              <p key={error} className="text-sm text-red-500">{error}</p>
+            )
+          )
+        }
+      </div>
     </div>
   );
 
   const Status = () => (
     <fieldset>
-      <legend className="mb-2 block text-sm font-medium">
-        Set the invoice status
-      </legend>
-      <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <input
-              id="pending"
-              name="status"
-              type="radio"
-              value="pending"
-              className={clsx(
-                'h-4 w-4 border-gray-300 bg-gray-100 text-gray-600 focus:ring-2',
-                'cursor-pointer'
-              )}
-            />
-            <label
-              htmlFor="pending"
-              className={clsx(
-                'flex items-center gap-1.5',
-                'text-xs font-medium text-gray-600 bg-gray-100',
-                'rounded-full px-3 py-1.5',
-                'cursor-pointer'
-              )}
-            >
-              Pending <ClockIcon className="h-4 w-4" />
-            </label>
+        <div className="grid gap-2">
+        <legend
+          className="block text-sm font-medium"
+          aria-describedby="status-error"
+        >
+          Set the invoice status
+        </legend>
+        <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <input
+                id="pending"
+                name="status"
+                type="radio"
+                value="pending"
+                className={clsx(
+                  'h-4 w-4 border-gray-300 bg-gray-100 text-gray-600 focus:ring-2',
+                  'cursor-pointer'
+                )}
+              />
+              <label
+                htmlFor="pending"
+                className={clsx(
+                  'flex items-center gap-1.5',
+                  'text-xs font-medium text-gray-600 bg-gray-100',
+                  'rounded-full px-3 py-1.5',
+                  'cursor-pointer'
+                )}
+              >
+                Pending
+                <ClockIcon className="h-4 w-4" />
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="paid"
+                name="status"
+                type="radio"
+                value="paid"
+                className={clsx(
+                  'h-4 w-4 border-gray-300 bg-gray-100 text-gray-600 focus:ring-2',
+                  'cursor-pointer'
+                )}
+              />
+              <label
+                htmlFor="paid"
+                className={clsx(
+                  'flex items-center gap-1.5',
+                  'text-xs font-medium text-white',
+                  'rounded-full bg-green-500 px-3 py-1.5',
+                  'cursor-pointer'
+                )}
+              >
+                Paid
+                <CheckIcon className="h-4 w-4" />
+              </label>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              id="paid"
-              name="status"
-              type="radio"
-              value="paid"
-              className={clsx(
-                'h-4 w-4 border-gray-300 bg-gray-100 text-gray-600 focus:ring-2',
-                'cursor-pointer'
-              )}
-            />
-            <label
-              htmlFor="paid"
-              className={clsx(
-                'flex items-center gap-1.5',
-                'text-xs font-medium text-white',
-                'rounded-full bg-green-500 px-3 py-1.5',
-                'cursor-pointer'
-              )}
-            >
-              Paid <CheckIcon className="h-4 w-4" />
-            </label>
-          </div>
+        </div>
+        <div id="status-error" aria-live="polite" aria-atomic="true">
+          {
+            state.errors?.status?.map(
+              (error: string) => (
+                <p key={error} className="text-sm text-red-500">{error}</p>
+              )
+            )
+          }
         </div>
       </div>
     </fieldset>
@@ -152,11 +194,17 @@ export default function Form({ customers }: { customers: CustomerField[] }) {
   );
 
   return (
-    <form action={createInvoice}>
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
+    <form action={formAction}>
+      <div className="grid gap-4 rounded-md bg-gray-50 p-4 md:p-6">
         <CustomerName />
         <Amount />
         <Status />
+        <div aria-live="polite" aria-atomic="true">
+          {
+            state.message &&
+            <p className="text-sm text-red-500">{state.message}</p>
+          }
+        </div>
       </div>
       <Buttons />
     </form>
