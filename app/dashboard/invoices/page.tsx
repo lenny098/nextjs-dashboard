@@ -5,7 +5,6 @@ import Search from '@/app/ui/search';
 import { Suspense } from 'react';
 import Table from '@/app/ui/invoices/table';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { fetchInvoicesPages } from '@/app/lib/data';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -22,8 +21,6 @@ export default async function Page(
     const query = searchParams?.query ?? '';
     const currentPage = Number(searchParams?.page ?? 1);
 
-    const totalPages = await fetchInvoicesPages(query);
-
     return (
         <div className="w-full">
             <div className="flex items-center justify-between w-full">
@@ -37,7 +34,7 @@ export default async function Page(
                 <Table {...{ query, currentPage }} />
             </Suspense>
             <div className="flex w-full justify-center mt-5">
-                <Pagination totalPages={totalPages} />
+                <Pagination query={query} />
             </div>
         </div>
     );

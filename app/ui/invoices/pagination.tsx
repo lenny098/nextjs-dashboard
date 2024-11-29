@@ -5,8 +5,35 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { generatePagination } from '@/app/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getPageCount } from '@/app/lib/actions';
 
-export default function Pagination({ totalPages }: { totalPages: number }) {
+const Skeleton = () => (
+  <>
+      <div className="inline-flex">
+        <PaginationArrow
+          direction="left"
+          href=""
+          isDisabled
+        />
+        <PaginationNumber
+          page="..."
+          href=""
+          position="middle"
+          isActive={false}
+        />
+        <PaginationArrow
+          direction="right"
+          href=""
+          isDisabled
+        />
+      </div>
+    </>
+);
+
+export default function Pagination({ query }: { query: string }) {
+  const [totalPages, setTotalPage] = useState(-1);
+
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get('page') ?? 1);
   const allPages = generatePagination(currentPage, totalPages);
@@ -19,6 +46,13 @@ export default function Pagination({ totalPages }: { totalPages: number }) {
 
     return `${pathname}?${params.toString()}`;
   };
+
+  useEffect(() => {
+    setTotalPage(-1); // reset page count
+    getPageCount(query).then(setTotalPage);
+  }, [query]);
+
+  if (totalPages < 0) return (<Skeleton />);
 
   return (
     <>
