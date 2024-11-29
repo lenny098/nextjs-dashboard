@@ -1,9 +1,14 @@
 import { fetchCustomers, fetchInvoiceById } from '@/app/lib/data';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import Form from '@/app/ui/invoices/edit-form';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export default async (props: { params: Promise<{ id: string }> }) => {
+export const metadata: Metadata = {
+    title: 'Edit Invoice',
+};
+
+export default async function Page(props: { params: Promise<{ id: string }> }) {
     const id = (await props.params).id;
 
     const [invoice, customers] = await Promise.all(
@@ -19,7 +24,7 @@ export default async (props: { params: Promise<{ id: string }> }) => {
                     [
                         { label: 'Invoices', href: '/dashboard/invoices' },
                         {
-                            label: 'Edit Invoices',
+                            label: 'Edit Invoice',
                             href: `/dashboard/inovices/${id}/edit`,
                             active: true,
                         }

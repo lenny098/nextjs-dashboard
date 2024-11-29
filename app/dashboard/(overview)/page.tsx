@@ -8,8 +8,13 @@ import {
     RevenueChartSkeleton,
 } from '@/app/ui/skeletons';
 import CardWrapper from '@/app/ui/dashboard/cards';
+import { Metadata } from 'next';
 
-export default async () => (
+export const metadata: Metadata = {
+    title: 'Dashboard',
+}
+
+const Page = async () => (
     <main>
         <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
             Dashboard
@@ -29,3 +34,5 @@ export default async () => (
         </div>
     </main>
 );
+
+export default Page;
